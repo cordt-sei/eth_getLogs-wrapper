@@ -1,11 +1,44 @@
 import { fetchAndStandardizeLogs } from './wrapper.js';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
+
+const argv = yargs(hideBin(process.argv))
+    .option('rpcUrl', {
+        type: 'string',
+        describe: 'RPC URL for the EVM endpoint',
+        demandOption: true,
+    })
+    .option('fromBlock', {
+        type: 'string',
+        describe: 'The starting block number (hex or decimal)',
+        demandOption: true,
+    })
+    .option('toBlock', {
+        type: 'string',
+        describe: 'The ending block number (hex or decimal)',
+        demandOption: true,
+    })
+    .option('address', {
+        type: 'string',
+        describe: 'Contract address to filter logs (optional)',
+    })
+    .option('topics', {
+        type: 'array',
+        describe: 'Array of topics to filter logs (optional)',
+    })
+    .help()
+    .argv;
 
 async function main() {
-    const rpcUrl = 'https://evm-rpc.sei.basementnodes.ca/';
+    const { rpcUrl, fromBlock, toBlock, address, topics } = argv;
+
     const filter = {
-        fromBlock: '0x7682952',
-        toBlock: '0x7682952',
+        fromBlock,
+        toBlock,
     };
+
+    if (address) filter.address = address;
+    if (topics) filter.topics = topics;
 
     try {
         const standardizedLogs = await fetchAndStandardizeLogs(filter, rpcUrl);

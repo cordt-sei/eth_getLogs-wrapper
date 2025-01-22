@@ -1,6 +1,7 @@
 # getLogs-wrapper
 
-A comprehensive wrapper for fetching logs from Ethereum-compatible RPC endpoints. The script handles dynamic batching and standardizes logs to ensure compatibility, particularly tailored for Sei’s EVM RPC implementation.
+A simple wrapper for fetching logs from Ethereum-compatible RPC endpoints.
+Handles dynamic batching and standardizes logs to ensure compatibility, particularly tailored for Sei’s EVM RPC implementation.
 
 ## Features
 
@@ -44,7 +45,7 @@ node script.js --rpcUrl '<RPC_URL>' --fromBlock '<FROM_BLOCK>' --toBlock '<TO_BL
 - `--topics` (optional): Array of event topics for filtering.
 - `--method` (optional): Log-fetching method. Options: `eth_getLogs`, `sei_getLogs`. Default: `eth_getLogs`.
 
-#### Example Command
+#### Request
 
 ```bash
 node script.js \
@@ -55,6 +56,44 @@ node script.js \
   --topics '["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"]' \
   --method 'sei_getLogs'
 ```
+
+#### Response
+
+<details>
+<summary>click to expand</summary>
+
+```json
+[
+  {
+    "address": "0x292c6a9e316d0200af3de7ba0cf855f15a9ef2ef",
+    "topics": [
+      "0x33b8e51b0573ba15684e7f0715fa68a797fa99612dbbb2a10cbf6a12ae2fe84d"
+    ],
+    "data": "0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000001...",
+    "blockNumber": "0x79f7f00",
+    "transactionHash": "0x3c88644dfb5ea1a94f9b7372e5551e51eff1c5330e69fcd2863c578ffd24dab5",
+    "transactionIndex": "0x10",
+    "blockHash": "0x9c64af3d9f097223a0174898a6fe494ad768d7b030ecf9923a855c6cf5f86adf",
+    "logIndex": "0x0",
+    "removed": false
+  },
+  {
+    "address": "0x292c6a9e316d0200af3de7ba0cf855f15a9ef2ef",
+    "topics": [
+      "0x33b8e51b0573ba15684e7f0715fa68a797fa99612dbbb2a10cbf6a12ae2fe84d"
+    ],
+    "data": "0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000001...",
+    "blockNumber": "0x79f7f01",
+    "transactionHash": "0xcd3935ab81749fbfab513434be06b88d3d60ee9719132b40422c30b60e3a2d86",
+    "transactionIndex": "0x1f",
+    "blockHash": "0x02e2d9c2ca599a4bc356c3dc92499a72d2b2dea57e1ac3be663bdd01425f1425",
+    "logIndex": "0x1",
+    "removed": false
+  }
+]
+```
+
+</details>
 
 ### Programmatic Usage
 
@@ -83,55 +122,10 @@ async function main() {
 main();
 ```
 
-## Example Output
-
-### Input Logs:
-
-```json
-[
-  {
-    "blockHash": "0xf645e34f3...",
-    "logIndex": "0x0",
-    "transactionIndex": "0x1",
-    "address": "0xe30fedd158...",
-    ...
-  },
-  {
-    "blockHash": "0xf645e34f3...",
-    "logIndex": "0x0",
-    "transactionIndex": "0x2",
-    "address": "0x3894085ef...",
-    ...
-  }
-]
-```
-
-### Output Logs:
-
-```json
-[
-  {
-    "blockHash": "0xf645e34f3...",
-    "logIndex": "0x0",
-    "transactionIndex": "0x1",
-    "address": "0xe30fedd158...",
-    ...
-  },
-  {
-    "blockHash": "0xf645e34f3...",
-    "logIndex": "0x1",
-    "transactionIndex": "0x2",
-    "address": "0x3894085ef...",
-    ...
-  }
-]
-```
-
 ## Notes
 
-- Ensure `fromBlock` and `toBlock` are above the base height (e.g., `125571999`) for Sei RPC.
-- Verify the RPC URL and filter parameters for accuracy.
-- Use `--method sei_getLogs` when working with Sei’s RPC.
+- `fromBlock` and `toBlock` may be specified in either hex or decimal format
+- `--method sei_getLogs` should be used where mirrored events for pointer contracts are desired
 
 ## License
 

@@ -6,7 +6,7 @@ import axios from 'axios';
  * Fetch and standardize logs from `eth_getLogs` on an RPC endpoint.
  * @param {Object} filter - The filter object for querying logs.
  * @param {string} rpcUrl - The RPC endpoint URL.
- * @returns {Promise<Object[]>} - Standardized logs with globally unique `logIndex`.
+ * @returns {Promise<Object[]>} - Standardized logs with globally unique `logIndex` per block.
  */
 export async function fetchAndStandardizeLogs(filter, rpcUrl) {
     try {
@@ -25,14 +25,14 @@ export async function fetchAndStandardizeLogs(filter, rpcUrl) {
 
         const blockLogsMap = new Map();
         const standardizedLogs = logs.map((log) => {
-            const blockHash = log.blockHash;
+            const blockNumber = log.blockNumber;
 
-            if (!blockLogsMap.has(blockHash)) {
-                blockLogsMap.set(blockHash, 0);
+            if (!blockLogsMap.has(blockNumber)) {
+                blockLogsMap.set(blockNumber, 0);
             }
 
-            const globalLogIndex = blockLogsMap.get(blockHash);
-            blockLogsMap.set(blockHash, globalLogIndex + 1);
+            const globalLogIndex = blockLogsMap.get(blockNumber);
+            blockLogsMap.set(blockNumber, globalLogIndex + 1);
 
             return {
                 ...log,

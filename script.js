@@ -80,7 +80,14 @@ async function main() {
         };
 
         if (address) filter.address = address;
-        if (topics) filter.topics = topics;
+        if (topics) {
+            // Parse topics if passed as a JSON string
+            try {
+                filter.topics = JSON.parse(topics);
+            } catch (err) {
+                throw new Error(`Invalid topics format. Must be a JSON array: ${topics}`);
+            }
+        }
 
         console.log(`Filter in hex: ${JSON.stringify(filter)}`);
         console.log(`Converted fromBlock (decimal): ${toDecimal(fromBlock)}`);

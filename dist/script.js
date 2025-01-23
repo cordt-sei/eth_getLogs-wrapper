@@ -1,106 +1,71 @@
-import { LogsFetcher, LogFilter } from './logs-fetcher';
+import { fetchAndStandardizeLogs } from './sei-logs-wrapper.js';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-
 const argv = yargs(hideBin(process.argv))
-    .option('rpcUrl', {
+    .options({
+    rpcUrl: {
         type: 'string',
         describe: 'RPC URL for the EVM endpoint',
         demandOption: true,
-    })
-    .option('fromBlock', {
+    },
+    fromBlock: {
         type: 'string',
         describe: 'The starting block number (hex or decimal)',
         demandOption: true,
-    })
-    .option('toBlock', {
+    },
+    toBlock: {
         type: 'string',
         describe: 'The ending block number (hex or decimal)',
         demandOption: true,
-    })
-    .option('address', {
+    },
+    address: {
         type: 'string',
         describe: 'Contract address to filter logs (optional)',
-    })
-    .option('topics', {
+    },
+    topics: {
         type: 'string',
         describe: 'JSON array of topics to filter logs (optional)',
-    })
-    .option('method', {
+    },
+    method: {
         type: 'string',
         describe: "Log-fetching method ('eth_getLogs' or 'sei_getLogs')",
         choices: ['eth_getLogs', 'sei_getLogs'],
         default: 'eth_getLogs',
-    })
-    .option('maxRetries', {
-        type: 'number',
-        describe: 'Maximum number of retry attempts',
-        default: 3,
-    })
-    .option('timeout', {
-        type: 'number',
-        describe: 'Request timeout in milliseconds',
-        default: 30000,
-    })
-    .option('retryDelay', {
-        type: 'number',
-        describe: 'Delay between retries in milliseconds',
-        default: 1000,
-    })
+    },
+})
     .help()
-    .argv;
-
+    .parseSync();
 async function main() {
-    const {
-        rpcUrl,
-        fromBlock,
-        toBlock,
-        address,
-        topics,
-        method,
-        maxRetries,
-        timeout,
-        retryDelay,
-    } = argv;
-
+    const { rpcUrl, fromBlock, toBlock, address, topics, method, } = argv;
     try {
-        // Initialize the LogsFetcher with configuration
-        const fetcher = new LogsFetcher(rpcUrl, {
-            maxRetries,
-            timeout,
-            retryDelay,
-        });
-
         // Build the filter object
-        const filter: LogFilter = {
+        const filter = {
             fromBlock,
             toBlock,
         };
-
         if (address) {
             filter.address = address;
         }
-
         if (topics) {
             try {
                 filter.topics = JSON.parse(topics);
-            } catch (err) {
+            }
+            catch (err) {
                 throw new Error(`Invalid topics format. Must be a JSON array: ${topics}`);
             }
         }
-
         console.log('Filter before processing:', JSON.stringify(filter, null, 2));
-        
-        const logs = await fetcher.fetchLogs(filter, method);
+        const logs = await fetchAndStandardizeLogs(filter, rpcUrl, method);
         console.log('Fetched Logs:', JSON.stringify(logs, null, 2));
-    } catch (error) {
+    }
+    catch (error) {
         if (error instanceof Error) {
             console.error('Error:', error.message);
-        } else {
+        }
+        else {
             console.error('Unknown error occurred');
         }
         process.exit(1);
     }
 }
-
 main();

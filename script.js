@@ -1,6 +1,4 @@
-// script.js
-
-import { fetchAndStandardizeLogs } from './wrapper.js';
+import { LogsFetcher, LogFilter } from './logs-fetcher';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
@@ -34,22 +32,56 @@ const argv = yargs(hideBin(process.argv))
         choices: ['eth_getLogs', 'sei_getLogs'],
         default: 'eth_getLogs',
     })
+    .option('maxRetries', {
+        type: 'number',
+        describe: 'Maximum number of retry attempts',
+        default: 3,
+    })
+    .option('timeout', {
+        type: 'number',
+        describe: 'Request timeout in milliseconds',
+        default: 30000,
+    })
+    .option('retryDelay', {
+        type: 'number',
+        describe: 'Delay between retries in milliseconds',
+        default: 1000,
+    })
     .help()
     .argv;
 
 async function main() {
-    const { rpcUrl, fromBlock, toBlock, address, topics, method } = argv;
+    const {
+        rpcUrl,
+        fromBlock,
+        toBlock,
+        address,
+        topics,
+        method,
+        maxRetries,
+        timeout,
+        retryDelay,
+    } = argv;
 
     try {
+        // Initialize the LogsFetcher with configuration
+        const fetcher = new LogsFetcher(rpcUrl, {
+            maxRetries,
+            timeout,
+            retryDelay,
+        });
+
         // Build the filter object
-        const filter = {
+        const filter: LogFilter = {
             fromBlock,
             toBlock,
         };
 
-        if (address) filter.address = address;
+        if (address) {
+            filter.address = address;
+        }
+
         if (topics) {
-            // Parse topics if passed as a JSON string
             try {
                 filter.topics = JSON.parse(topics);
             } catch (err) {
@@ -57,12 +89,17 @@ async function main() {
             }
         }
 
-        console.log('Filter before normalization:', JSON.stringify(filter, null, 2));
-
-        const standardizedLogs = await fetchAndStandardizeLogs(filter, rpcUrl, method);
-        console.log('Standardized Logs:', JSON.stringify(standardizedLogs, null, 2));
+        console.log('Filter before processing:', JSON.stringify(filter, null, 2));
+        
+        const logs = await fetcher.fetchLogs(filter, method);
+        console.log('Fetched Logs:', JSON.stringify(logs, null, 2));
     } catch (error) {
-        console.error('Error:', error.message);
+        if (error instanceof Error) {
+            console.error('Error:', error.message);
+        } else {
+            console.error('Unknown error occurred');
+        }
+        process.exit(1);
     }
 }
 

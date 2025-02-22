@@ -16,11 +16,10 @@ export interface Log {
     removed?: boolean;
 }
 /**
- * Fetch and standardize logs from an RPC endpoint.
- * Automatically handles pagination for large ranges by splitting into smaller chunks.
+ * Fetch logs from an RPC endpoint, automatically handling pagination for large ranges.
  * @param {LogFilter} filter - The filter object for querying logs
  * @param {string} rpcUrl - The RPC endpoint URL
  * @param {string} method - The log-fetching method (e.g., eth_getLogs, sei_getLogs)
- * @returns {Promise<Log[]>} Standardized logs with globally unique logIndex per block
+ * @returns {Promise<Log[]>} - Standardized logs with globally unique logIndex per block
  */
-export declare function fetchAndStandardizeLogs(filter: LogFilter, rpcUrl: string, method?: string): Promise<Log[]>;
+export declare function fetchLogs(filter: LogFilter, rpcUrl: string, method?: string): Promise<Log[]>;

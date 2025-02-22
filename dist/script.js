@@ -1,4 +1,4 @@
-import { fetchAndStandardizeLogs } from './sei-logs-wrapper.js';
+import { fetchLogs } from './sei-logs-wrapper.js';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 const argv = yargs(hideBin(process.argv))
@@ -37,25 +37,27 @@ const argv = yargs(hideBin(process.argv))
     .parseSync();
 async function main() {
     const { rpcUrl, fromBlock, toBlock, address, topics, method, } = argv;
+    // Normalize block numbers (convert decimal to hex when necessary)
+    const normalizeBlock = (block) => block.startsWith('0x') ? block : `0x${parseInt(block, 10).toString(16)}`;
     try {
+        const parsedTopics = topics ? (() => {
+            try {
+                return JSON.parse(topics);
+            }
+            catch {
+                console.error(`Invalid topics format. Must be a JSON array: ${topics}`);
+                process.exit(1);
+            }
+        })() : undefined;
         // Build the filter object
         const filter = {
-            fromBlock,
-            toBlock,
+            fromBlock: normalizeBlock(fromBlock),
+            toBlock: normalizeBlock(toBlock),
+            ...(address && { address }),
+            ...(parsedTopics && { topics: parsedTopics })
         };
-        if (address) {
-            filter.address = address;
-        }
-        if (topics) {
-            try {
-                filter.topics = JSON.parse(topics);
-            }
-            catch (err) {
-                throw new Error(`Invalid topics format. Must be a JSON array: ${topics}`);
-            }
-        }
         console.log('Filter before processing:', JSON.stringify(filter, null, 2));
-        const logs = await fetchAndStandardizeLogs(filter, rpcUrl, method);
+        const logs = await fetchLogs(filter, rpcUrl, method);
         console.log('Fetched Logs:', JSON.stringify(logs, null, 2));
     }
     catch (error) {

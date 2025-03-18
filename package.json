@@ -1,6 +1,6 @@
 {
   "name": "sei-logs-wrapper",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Extends the eth_getLogs function by batching calls and merging the responses. Handles unlimited block ranges and log counts through automatic pagination. Supports both Ethereum and Sei network log fetching methods.",
   "main": "dist/sei-logs-wrapper.js",
   "types": "dist/sei-logs-wrapper.d.ts",
@@ -37,7 +37,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cordt-sei/getLogs-wrapper.git"
+    "url": "git+https://github.com/cordt-sei/eth_getLogs-wrapper.git"
   },
   "bin": {
     "sei-logs-wrapper": "dist/script.js"
